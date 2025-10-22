@@ -1,0 +1,110 @@
+schema_version: "1.0.0"
+document_id: "wikipedia-homepage-zh"
+language: "zh-CN"
+created_at: "2023-10-01T00:00:00Z"
+results:
+  - result:
+      rationale: "这是首页的基本定义，适合入门级读者理解核心概念。"
+      type: "基础概念"
+      quotes:
+        - "**首页**或**主页**（英語：home page或homepage）是[计算机](https://zh.wikipedia.org/wiki/%E7%94%B5%E5%AD%90%E8%AE%A1%E7%AE%97%E6%9C%BA \"电子计算机\")[术语](https://zh.wikipedia.org/wiki/%E6%9C%AF%E8%AF%AD \"术语\")，各[网站](https://zh.wikipedia.org/wiki/%E7%BD%91%E7%AB%99 \"网站\")的主要[网页](https://zh.wikipedia.org/wiki/%E7%BD%91%E9%A1%B5 \"网页\")——一般是指访问一个应用程序启动时始终显示在网站或[网页浏览器](https://zh.wikipedia.org/wiki/%E7%BD%91%E9%A1%B5%E6%B5%8F%E8%A7%88%E5%99%A8 \"网页浏览器\")中的一个或多个初始网页等画面存在的站点，在这种解释里亦稱**起始页**（英語：start page）。"
+      confidence: 0.95
+      gap: "无"
+  - result:
+      rationale: "解释首页的结构和功能，提供基础信息。"
+      type: "基础概念"
+      quotes:
+        - "首页通常提供位于页面层次结构底部的关于网站所有者和内容的信息，可能被分成不同的部分。"
+        - "首页大部分都位于页面层次结构的顶部（第一页），可能按节排列。"
+      confidence: 0.85
+      gap: "无"
+  - result:
+      rationale: "描述多语制网站的首页处理方式，包含具体例子。"
+      type: "举例"
+      quotes:
+        - "[多语制](https://zh.wikipedia.org/wiki/%E5%A4%9A%E8%AF%AD%E5%88%B6 \"多语制\")网站通常为多种可用语言提供一个主页或是一个网站提供多个可用语言的[超链接](https://zh.wikipedia.org/wiki/%E8%B6%85%E9%93%BE%E6%8E%A5 \"超链接\")[列表](https://zh.wikipedia.org/wiki/%E5%88%97%E8%A1%A8 \"列表\")。"
+      confidence: 0.8
+      gap: "未知术语：多语制（若读者无网页设计背景）"
+  - result:
+      rationale: "说明跨国公司主页的链接列表，易懂的例子。"
+      type: "举例"
+      quotes:
+        - "[跨国公司](https://zh.wikipedia.org/wiki/%E8%B7%A8%E5%9B%BD%E5%85%AC%E5%8F%B8 \"跨国公司\")的主页有时包含到其[子公司](https://zh.wikipedia.org/wiki/%E5%AD%90%E5%85%AC%E5%8F%B8 \"子公司\")简单的地方[超链接](https://zh.wikipedia.org/wiki/%E8%B6%85%E9%93%BE%E6%8E%A5 \"超链接\")[列表](https://zh.wikipedia.org/wiki/%E5%88%97%E8%A1%A8 \"列表\")。"
+      confidence: 0.75
+      gap: "无"
+  - result:
+      rationale: "描述特殊情况下的首页功能，如警告和动画，提供可操作的步骤。"
+      type: "步骤/流程"
+      quotes:
+        - "在内容可能会令人感到不适的网页里，首页通常会出现警告和邀请该访问网站，要么进入，要么离开。"
+        - "为了节省时间，它通常是可以绕过、跳过的。"
+      confidence: 0.8
+      gap: "无"
+  - result:
+      rationale: "介绍返回首页的机制和规则，包含关键规则。"
+      type: "关键术语"
+      quotes:
+        - "通常，网站上的每个页面都有一个到主页的超链接，无论页面在哪里，都可以很容易地返回。"
+        - "根据[三次连点规则](https://zh.wikipedia.org/wiki/%E4%B8%89%E6%AC%A1%E8%BF%9E%E7%82%B9%E8%A7%84%E5%88%99 \"三次连点规则\")，访问者必须能够通过主页上最多三个超链接访问网站的任何页面。"
+      confidence: 0.9
+      gap: "未知术语：三次连点规则（所需先修：网页设计基础）"
+  - result:
+      rationale: "首页的作用和元素，包含例子，适合入门。"
+      type: "基础概念"
+      quotes:
+        - "首页一般是用户通过网址访问一个网站时所看到的首个页面，用于吸引访问者的注意，該網站的重點訴求呈現，通常也起到[登陆页](https://zh.wikipedia.org/w/index.php?title=%E7%99%BB%E9%99%86%E9%A1%B5&action=edit&redlink=1 \"登陆页（页面不存在）\")的作用。"
+        - "例如，新闻网站可能会有一个用于反映最新最热的新闻的[动态首页](https://zh.wikipedia.org/wiki/%E5%8B%95%E6%85%8B%E7%B6%B2%E9%A0%81 \"動態網頁\")，它呈现热门新闻的提要和第一段，并提供通往全文的链接。"
+      confidence: 0.95
+      gap: "无"
+  - result:
+      rationale: "说明网站可以有多个首页，提供具体例子。"
+      type: "举例"
+      quotes:
+        - "尽管大多数网站只有唯一的首页，但其实一个网站可以有多个首页。"
+        - "例如，[维基百科](https://zh.wikipedia.org/wiki/%E7%BB%B4%E5%9F%BA%E7%99%BE%E7%A7%91 \"维基百科\")的首页除`wikipedia.org`、`www.wikipedia.org`之外，还有`en.wikipedia.org`和`zh.wikipedia.org`等。"
+      confidence: 0.9
+      gap: "无"
+  - result:
+      rationale: "首页URL的结构和行为，包含例子和因果关系。"
+      type: "举例"
+      quotes:
+        - "首页的[URL地址](https://zh.wikipedia.org/wiki/%E7%BB%9F%E4%B8%80%E8%B5%84%E6%BA%90%E5%AE%9A%E4%BD%8D%E7%AC%A6 \"统一资源定位符\")通常类似于`http://www.example.com/index.html`或`http://www.example.com/default.html`。"
+        - "但如果用户了其中的 `index.html` 或`default.html`，[服务器](https://zh.wikipedia.org/wiki/%E6%9C%8D%E5%8A%A1%E5%99%A8 "服务器")还是会将他们带入相应网页，[\[7\]](https://zh.wikipedia.org/wiki/%E9%A6%96%E9%A1%B5#cite_note-url-7)比如`http://www.example.com/`和`http://example.com/index.html`就都通往`example.com`的首页。"
+      confidence: 0.85
+      gap: "未知术语：URL地址、服务器（所需先修：网络基础）"
+  - result:
+      rationale: "如果无index.html的默认行为，描述流程。"
+      type: "步骤/流程"
+      quotes:
+        - "如果一个网站的`index.html`没有被创建，在其安全设置允许的情况下，许多[网页服务器](https://zh.wikipedia.org/wiki/%E7%B6%B2%E9%A0%81%E4%BC%BA%E6%9C%8D%E5%99%A8 \"網頁伺服器\")会默认地展示一个由网站目录定位的文件列表，通常包含着到各个文件的[超链接](https://zh.wikipedia.org/wiki/%E8%B6%85%E9%80%A3%E7%B5%90 \"超連結\")和简单的[文件共享](https://zh.wikipedia.org/wiki/%E6%AA%94%E6%A1%88%E5%88%86%E4%BA%AB \"檔案分享\")功能，但不会有单独的索引文件。"
+      confidence: 0.8
+      gap: "无"
+  - result:
+      rationale: "起始页的定义和例子。"
+      type: "基础概念"
+      quotes:
+        - "首页有时也指用户打开[网页浏览器](https://zh.wikipedia.org/wiki/%E7%BD%91%E9%A1%B5%E6%B5%8F%E8%A7%88%E5%99%A8 \"网页浏览器\")后所进入的第一个网页，即**起始页**。"
+        - "例如，它可以展示用户经常去的网站的缩略图。"
+      confidence: 0.9
+      gap: "无"
+  - result:
+      rationale: "个人主页的称呼。"
+      type: "关键术语"
+      quotes:
+        - "[个人主页](https://zh.wikipedia.org/wiki/%E4%B8%AA%E4%BA%BA%E7%BD%91%E7%AB%99 \"个人网站\")也常被称作首页，尽管它们可能包含很多页面。"
+      confidence: 0.7
+      gap: "无"
+  - result:
+      rationale: "在德语中的同义词，提供与已有知识连接。"
+      type: "与已有知识产生连接"
+      quotes:
+        - "在德语中，“首页”常作为“网站”的同义词。"
+      confidence: 0.75
+      gap: "无"
+  - result:
+      rationale: "扩展用法，提供类比。"
+      type: "类比"
+      quotes:
+        - "在浏览器环境外，首页一词也常被使用，比如，它常指移动设备如[手机](https://zh.wikipedia.org/wiki/%E7%A7%BB%E5%8A%A8%E7%94%B5%E8%AF%9D \"移动电话\")的[主界面](https://zh.wikipedia.org/wiki/%E4%B8%BB%E7%95%8C%E9%9D%A2 \"主界面\")。"
+      confidence: 0.8
+      gap: "无"

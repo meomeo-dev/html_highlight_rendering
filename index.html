@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+	<head>
+		<!-- region 序章：页面元信息与整体样式 -->
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Markdown 高亮渲染器 · 单文件 SPA</title>
+		<style>
+			/* region 基础样式（排版与布局） */
+			:root {
+				--bg: #0b1016;
+				--panel: #121824;
+				--text: #e6edf3;
+				--muted: #9fb0c8;
+				--accent: #7cc0ff;
+				--accent-2: #a8ffcc;
+				--danger: #ff7a7a;
+				--warning: #ffc658;
+				--mark-bg: #ffee99;
+				--mark-fg: #242424;
+				--border: #1e293b;
+			}
+
+			* { box-sizing: border-box; }
+			html, body { height: 100%; }
+			body {
+				margin: 0;
+				background: linear-gradient(180deg, #0b1016 0%, #0e1420 100%);
+				color: var(--text);
+				font: 14px/1.6 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
+					Noto Sans, Ubuntu, Cantarell, Helvetica Neue, Arial, "PingFang SC",
+					"Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+			}
+
+					.app {
+						/* Long page layout: let body scroll, no fixed footer/header rows */
+						display: block;
+					}
+
+					header {
+				border-bottom: 1px solid var(--border);
+						background: rgba(18, 24, 36, 0.9);
+						backdrop-filter: saturate(120%) blur(8px);
+						position: static; /* not sticky */
+			}
+			.toolbar {
+				max-width: 1200px;
+				margin: 0 auto;
+				padding: 12px 16px;
+				display: flex;
+				align-items: center;
+				gap: 12px;
+				flex-wrap: wrap;
+			}
+			.brand {
+				font-weight: 700;
+				letter-spacing: 0.2px;
+				color: var(--accent);
+				margin-right: 8px;
+			}
+			.hint { color: var(--muted); }
+
+			.file {
+				display: inline-flex;
+				align-items: center;
+				gap: 8px;
+				padding: 8px 10px;
+				background: #0f1625;
+				border: 1px solid var(--border);
+				border-radius: 8px;
+			}
+			.file input[type="file"] { color: var(--muted); }
+
+			.button {
+				appearance: none;
+				border: 1px solid var(--border);
+				background: #0e1524;
+				color: var(--text);
+				padding: 8px 12px;
+				border-radius: 8px;
+				cursor: pointer;
+			}
+			.button.primary {
+				background: linear-gradient(90deg, #2563eb, #7c3aed);
+				border-color: transparent;
+			}
+			.button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+			.main {
+				display: grid;
+				grid-template-columns: 320px 1fr;
+				gap: 16px;
+				max-width: 1200px;
+				margin: 0 auto;
+				padding: 16px;
+				min-height: 0; /* for proper child scrolling */
+			}
+
+			.panel {
+				background: var(--panel);
+				border: 1px solid var(--border);
+				border-radius: 12px;
+				padding: 12px;
+				min-height: 0;
+			}
+
+			.side {
+				display: grid;
+				grid-template-rows: auto 1fr;
+				gap: 12px;
+			}
+
+			.meta {
+				display: grid;
+				gap: 8px;
+			}
+			.kv { display: grid; grid-template-columns: 96px 1fr; gap: 6px; }
+			.kv .k { color: var(--muted); }
+
+			.list {
+				overflow: auto;
+				display: grid;
+				gap: 10px;
+			}
+			.quote-item {
+				background: #0f1625;
+				border: 1px solid var(--border);
+				border-radius: 10px;
+				padding: 10px;
+				display: grid;
+				gap: 6px;
+			}
+			.quote-item .q { color: #e2e8f0; }
+			/* 让非英文长词/URL 在侧栏可换行，避免溢出 */
+			.quote-item .q {
+				word-break: break-word;        /* 兼容性较好，必要时在边界断词 */
+				overflow-wrap: anywhere;       /* 优先：允许任意位置换行（支持长 URL）*/
+				white-space: normal;           /* 确保正常换行行为 */
+			}
+			.quote-item .sub { color: var(--muted); font-size: 12px; }
+			.quote-item .actions { display: flex; gap: 6px; }
+
+			/* type 色块与标签 */
+			.dot { width: 10px; height: 10px; border-radius: 50%; border: 1px solid var(--border); display: inline-block; }
+			.badge { display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); background: #0f1625; font-size: 12px; color: #cdd6e3; }
+
+					.content {
+						/* Use document scrolling instead of inner container */
+						overflow: visible;
+					}
+			.doc {
+				max-width: 900px;
+				margin: 0 auto;
+				padding: 4px 8px 80px;
+			}
+			.doc h1, .doc h2, .doc h3 {
+				scroll-margin-top: 84px;
+			}
+			.doc h1 { font-size: 28px; margin: 16px 0 12px; }
+			.doc h2 { font-size: 22px; margin: 18px 0 10px; color: #bcd7ff; }
+			.doc h3 { font-size: 18px; margin: 16px 0 8px; color: #c6ffe2; }
+			.doc p { margin: 10px 0; }
+			.doc a { color: #8ad1ff; text-decoration: none; }
+			.doc a:hover { text-decoration: underline; }
+			.doc code { background: #0b1323; padding: 2px 6px; border-radius: 6px; }
+			.doc pre { background: #0b1323; padding: 12px; border-radius: 10px; overflow: auto; }
+			.doc blockquote { border-left: 3px solid #2a3956; padding-left: 10px; color: #c0c9d6; }
+
+					mark.hl {
+				background: var(--mark-bg);
+				color: var(--mark-fg);
+				padding: 1px 0;
+				border-radius: 4px;
+						/* Ensure anchored scroll leaves space for the header */
+						scroll-margin-top: 84px;
+			}
+			.legend { display: flex; gap: 8px; align-items: center; color: var(--muted); }
+			.pill { display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); background: #0f1625; }
+
+							/* footer 已移除 */
+
+			.error { color: var(--danger); }
+			.ok { color: var(--accent-2); }
+
+			@media (max-width: 960px) {
+				.main { grid-template-columns: 1fr; }
+			}
+			/* endregion */
+		</style>
+		<!-- endregion -->
+	</head>
+	<body>
+		<!-- region 第一章：应用入口与主流程（Top-Down Narrative） -->
+		<div class="app" id="app">
+			<header>
+				<div class="toolbar">
+					<div class="brand">Markdown 高亮渲染器</div>
+					<div class="hint">单文件 · 离线可用 · 渐进暴露</div>
+
+					<div class="file" title="选择 Markdown 源文件 (.md)">
+						<label>源文档 (.md)</label>
+						<input type="file" id="mdInput" accept=".md,.markdown,.txt" />
+					</div>
+
+					<div class="file" title="选择高亮配置文件 (.yaml)">
+						<label>高亮文件 (.yaml)</label>
+						<input type="file" id="yamlInput" accept=".yaml,.yml" />
+					</div>
+
+					<a class="button" href="highlight.prompt.md" download title="下载用于生成高亮的提示词模板（highlight.prompt.md）">下载提示词</a>
+
+						<label class="badge" title="仅对未命中的条目尝试模糊匹配（编辑距离阈值约 15%）" style="cursor:pointer;">
+							<input type="checkbox" id="fuzzyToggle" style="margin-right:6px; accent-color:#7cc0ff;"> 模糊匹配
+						</label>
+
+						<label class="badge" title="编辑距离阈值（占引文长度比例），仅在启用模糊匹配时生效" style="gap:6px; align-items:center;">
+							<span style="color:#cdd6e3;">阈值</span>
+							<input type="range" id="fuzzySlider" min="0.0" max="1.0" step="0.01" value="0.15" style="vertical-align:middle; width:120px;">
+							<span id="fuzzyVal">15%</span>
+						</label>
+
+					<button class="button" id="clearBtn">清除高亮</button>
+					<button class="button primary" id="runBtn" disabled>渲染并高亮</button>
+
+					<div class="legend" style="margin-left:auto">
+						<span class="pill">已加载: <span id="mdName">无</span></span>
+						<span class="pill">高亮: <span id="yamlName">无</span></span>
+						<span class="pill" id="status">待命中…</span>
+					</div>
+				</div>
+			</header>
+
+			<main class="main">
+				<aside class="side">
+					<section class="panel meta">
+						<div class="kv"><div class="k">文档 ID</div><div id="docId">—</div></div>
+						<div class="kv"><div class="k">语言</div><div id="docLang">—</div></div>
+						<div class="kv"><div class="k">创建时间</div><div id="docCreated">—</div></div>
+						<div class="kv"><div class="k">匹配结果</div><div id="matchStats">—</div></div>
+						<div style="display:flex; gap:8px; flex-wrap: wrap; margin-top:6px;">
+							<button class="button" id="prevBtn" disabled>上一处</button>
+							<button class="button" id="nextBtn" disabled>下一处</button>
+							<button class="button" id="exportBtn" disabled>导出已高亮 HTML</button>
+						</div>
+					</section>
+					<section class="panel">
+						<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+							<div style="font-weight:600;">高亮清单</div>
+							<div class="hint" id="listHint">加载 YAML 后显示</div>
+						</div>
+						<div class="list" id="quotesList"></div>
+					</section>
+				</aside>
+
+				<section class="panel content">
+					<article class="doc" id="doc">
+						<h1>欢迎 👋</h1>
+						<p>
+							请选择左上角的 <strong>Markdown 源文件</strong> 与 <strong>YAML 高亮文件</strong>，
+							然后点击“渲染并高亮”。本应用将先渲染 Markdown，再对 YAML 中的 <em>quote</em> 文本进行定位与高亮。
+						</p>
+						<p class="hint">提示：示例文件可参考您提供的 <code>article.md</code> 与 <code>highlight.yaml</code>。</p>
+					</article>
+				</section>
+			</main>
+
+			<!-- footer removed -->
+		</div>
+		<!-- endregion -->
+
+		<!-- region 第二章：脚本入口与应用骨架（Progressive Disclosure） -->
+		<script>
+			// region 序言：以 main() 作为阅读入口
+			function main() {
+				const app = new HighlightingMarkdownApp();
+				app.boot();
+			}
+			// 注：实际启动位于脚本末尾，待类定义完成后再触发。
+			// endregion
+
+			// region 核心类：HighlightingMarkdownApp（主流程协调者）
+			class HighlightingMarkdownApp {
+				constructor() {
+					// 收集关键 DOM 引用
+					this.$ = {
+						mdInput: document.getElementById('mdInput'),
+						yamlInput: document.getElementById('yamlInput'),
+						runBtn: document.getElementById('runBtn'),
+						clearBtn: document.getElementById('clearBtn'),
+						prevBtn: document.getElementById('prevBtn'),
+						nextBtn: document.getElementById('nextBtn'),
+						exportBtn: document.getElementById('exportBtn'),
+						mdName: document.getElementById('mdName'),
+						yamlName: document.getElementById('yamlName'),
+						doc: document.getElementById('doc'),
+						docId: document.getElementById('docId'),
+						docLang: document.getElementById('docLang'),
+						docCreated: document.getElementById('docCreated'),
+						matchStats: document.getElementById('matchStats'),
+						status: document.getElementById('status'),
+						quotesList: document.getElementById('quotesList'),
+						listHint: document.getElementById('listHint'),
+						fuzzyToggle: document.getElementById('fuzzyToggle'),
+						fuzzySlider: document.getElementById('fuzzySlider'),
+						fuzzyVal: document.getElementById('fuzzyVal'),
+					};
+
+					// 内部状态
+					this.state = {
+						mdText: '',
+						yamlRaw: '',
+						meta: { document_id: '—', language: '—', created_at: '—' },
+						quotes: [], // {quote, confidence, index}
+						marks: [], // DOM mark elements
+						cursor: -1,
+						fuzzyEnabled: false,
+						fuzzyThreshold: 0.15,
+					};
+				}
+
+				boot() {
+					// 顶层流程：绑定事件 + 按需启用按钮
+					this._bindEvents();
+					this._updateButtons();
+					this._setStatus('待命中…');
+				}
+
+				// region 模块内生：事件与交互
+				_bindEvents() {
+					const { mdInput, yamlInput, runBtn, clearBtn, prevBtn, nextBtn, exportBtn, fuzzyToggle, fuzzySlider, fuzzyVal } = this.$;
+					// 模糊匹配开关 & 阈值滑块
+					const syncFuzzyUI = () => {
+						if (fuzzyVal) fuzzyVal.textContent = Math.round(this.state.fuzzyThreshold * 100) + '%';
+						if (fuzzySlider) fuzzySlider.disabled = !this.state.fuzzyEnabled;
+						if (fuzzySlider && (fuzzySlider.value !== String(this.state.fuzzyThreshold))) {
+							fuzzySlider.value = String(this.state.fuzzyThreshold);
+						}
+					};
+					this.state.fuzzyEnabled = !!(fuzzyToggle && fuzzyToggle.checked);
+					syncFuzzyUI();
+					if (fuzzyToggle) {
+						fuzzyToggle.addEventListener('change', () => {
+							this.state.fuzzyEnabled = !!fuzzyToggle.checked;
+							syncFuzzyUI();
+						});
+					}
+					if (fuzzySlider) {
+						fuzzySlider.addEventListener('input', () => {
+							const v = Number(fuzzySlider.value);
+							if (Number.isFinite(v)) {
+								this.state.fuzzyThreshold = Math.max(0, Math.min(1.0, v));
+								syncFuzzyUI();
+							}
+						});
+					}
+
+					mdInput.addEventListener('change', () => {
+						const f = mdInput.files && mdInput.files[0];
+						this.$.mdName.textContent = f ? f.name : '无';
+						this._updateButtons();
+					});
+
+					yamlInput.addEventListener('change', () => {
+						const f = yamlInput.files && yamlInput.files[0];
+						this.$.yamlName.textContent = f ? f.name : '无';
+						this._updateButtons();
+					});
+
+					runBtn.addEventListener('click', async () => {
+						try {
+							this._setStatus('读取文件…');
+							await this._loadInputs();
+							this._setStatus('渲染 Markdown…');
+							this._renderMarkdown();
+							this._setStatus('解析 YAML…');
+							this._parseYaml();
+							this._setStatus('执行文本匹配与高亮…');
+							const matches = this._highlightQuotes();
+							this._populateQuoteList(matches);
+							this._setStatus(`完成：成功高亮 ${matches.success} 处，未匹配 ${matches.missed} 处。`);
+						} catch (err) {
+							console.error(err);
+							this._setStatus('错误：' + err.message, true);
+						}
+					});
+
+					clearBtn.addEventListener('click', () => {
+						this._clearHighlights();
+						this._setStatus('已清除高亮。');
+					});
+
+					prevBtn.addEventListener('click', () => this._jump(-1));
+					nextBtn.addEventListener('click', () => this._jump(1));
+					exportBtn.addEventListener('click', () => this._exportHighlightedHTML());
+				}
+
+				_updateButtons() {
+					const hasMd = !!(this.$.mdInput.files && this.$.mdInput.files[0]);
+					const hasYaml = !!(this.$.yamlInput.files && this.$.yamlInput.files[0]);
+					this.$.runBtn.disabled = !(hasMd && hasYaml);
+				}
+
+				_setStatus(text, isError = false) {
+					this.$.status.textContent = text;
+					this.$.status.className = isError ? 'error' : 'hint';
+				}
+				// endregion
+
+				// region 模块内生：输入加载（FileReader）
+				async _loadInputs() {
+					const mdFile = this.$.mdInput.files && this.$.mdInput.files[0];
+					const yamlFile = this.$.yamlInput.files && this.$.yamlInput.files[0];
+					if (!mdFile || !yamlFile) throw new Error('请同时选择 Markdown 与 YAML 文件');
+
+					const [mdText, yamlRaw] = await Promise.all([
+						this._readFileText(mdFile),
+						this._readFileText(yamlFile),
+					]);
+					this.state.mdText = mdText;
+					this.state.yamlRaw = yamlRaw;
+				}
+
+				_readFileText(file) {
+					return new Promise((resolve, reject) => {
+						const reader = new FileReader();
+						reader.onerror = () => reject(new Error('文件读取失败: ' + file.name));
+						reader.onload = () => resolve(String(reader.result || ''));
+						reader.readAsText(file, 'utf-8');
+					});
+				}
+				// endregion
+
+				// region 模块内生：Markdown 渲染（轻量实现）
+				_renderMarkdown() {
+					const html = this._markdownToHtml(this.state.mdText);
+					this.$.doc.innerHTML = html;
+					this._clearHighlights(); // 渲染会重建 DOM，需清空旧高亮
+				}
+
+				_markdownToHtml(md) {
+					// 目标：足够覆盖常见语法（标题、段落、加粗、斜体、链接、行内代码、引用、列表、代码块）
+					// 简化策略：分块解析代码块与段落，行内再做替换。
+
+					// 预处理：Windows 换行 -> \n
+					md = md.replace(/\r\n?/g, '\n');
+
+					// 代码块（三引号）
+					const fenceRe = /```([\s\S]*?)```/g;
+					const fences = [];
+					md = md.replace(fenceRe, (_, code) => {
+						const i = fences.length;
+						fences.push(code);
+						return `\uFFF0FENCE_${i}\uFFF1`;
+					});
+
+					// 转义 HTML
+					const esc = (s) => s
+						.replace(/&/g, '&amp;')
+						.replace(/</g, '&lt;')
+						.replace(/>/g, '&gt;');
+
+					// 按段落/空行切分
+					const blocks = md.split(/\n{2,}/);
+					const out = [];
+					for (let block of blocks) {
+						const lines = block.split(/\n/);
+
+						// 标题 #, ##, ###
+						const m = /^(#{1,6})\s+(.+)$/.exec(lines[0]);
+						if (m) {
+							const lvl = m[1].length;
+							out.push(`<h${lvl}>${this._renderInlines(m[2])}</h${lvl}>`);
+							continue;
+						}
+
+						// 引用块
+						if (/^>\s?/.test(lines[0])) {
+							const text = lines.map(l => l.replace(/^>\s?/, '')).join(' ');
+							out.push(`<blockquote>${this._renderInlines(text)}</blockquote>`);
+							continue;
+						}
+
+						// 无序列表
+						if (/^\s*[-*+]\s+/.test(lines[0])) {
+							const items = lines.map(l => l.replace(/^\s*[-*+]\s+/, ''));
+							out.push(`<ul>${items.map(i => `<li>${this._renderInlines(i)}</li>`).join('')}</ul>`);
+							continue;
+						}
+
+						// 保留未知 HTML 区块（如 <text_content>）
+						if (/^\s*</.test(block.trim())) {
+							out.push(block);
+							continue;
+						}
+
+						// 普通段落
+						out.push(`<p>${this._renderInlines(lines.join(' '))}</p>`);
+					}
+
+					// 还原代码块
+					let html = out.join('\n');
+					html = html.replace(/\uFFF0FENCE_(\d+)\uFFF1/g, (_, i) => {
+						const code = esc(fences[Number(i)] || '');
+						return `<pre><code>${code}</code></pre>`;
+					});
+
+					return html;
+				}
+
+				_renderInlines(text) {
+					// 行内元素：先转义，再做富文本替换
+					const esc = (s) => s
+						.replace(/&/g, '&amp;')
+						.replace(/</g, '&lt;')
+						.replace(/>/g, '&gt;');
+					let t = esc(text);
+
+					// 链接 [text](url)
+					// 支持转义的方括号与右括号：如 \[1\]、\)
+					t = t.replace(/\[((?:\\.|[^\]])+)\]\(((?:\\.|[^)])+)\)/g, (m, txt, href) => {
+						// 仅在链接文本中去掉对部分标点的反斜杠转义，避免影响代码片段
+						const unesc = (s) => s.replace(/\\([\[\]\(\)`*_~!#.+\-])/g, '$1');
+						return `<a href="${href}" target="_blank" rel="noreferrer noopener">${unesc(txt)}<\/a>`;
+					});
+					// 粗体 **text**
+					t = t.replace(/\*\*([^*]+)\*\*/g, '<strong>$1<\/strong>');
+					// 斜体 *text* 或 _text_
+					t = t.replace(/\*(?!\*)([^*]+)\*/g, '<em>$1<\/em>');
+					t = t.replace(/_([^_]+)_/g, '<em>$1<\/em>');
+					// 行内代码 `code`
+					t = t.replace(/`([^`]+)`/g, '<code>$1<\/code>');
+					return t;
+				}
+				// endregion
+
+				// region 模块内生：YAML 解析（针对给定结构的轻量解析器）
+				_parseYaml() {
+					// 目标结构（示例）：
+					// schema_version: "1.0.0"
+					// document_id: "456..."
+					// language: "en"
+					// created_at: "..."
+					// results:
+					//   - result:
+					//       rationale: "..."
+					//       quotes: "..." | ["...", "..."]
+					//       confidence: 0.95
+					//       gap: "..."
+					const raw = this.state.yamlRaw.replace(/\r\n?/g, '\n');
+					const lines = raw.split(/\n/);
+
+					const meta = { document_id: '—', language: '—', created_at: '—' };
+					const quotes = [];
+					let inResults = false;
+					let current = null;
+					let readingQuotes = false; // 是否正在读取多行 quotes: 数组
+
+					const parseValue = (v) => {
+						v = v.trim();
+						if (v === '') return '';
+						if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) {
+							return v.slice(1, -1);
+						}
+						// 尝试基本数字/布尔
+						const num = Number(v);
+						if (!Number.isNaN(num)) return num;
+						if (v === 'true') return true;
+						if (v === 'false') return false;
+						return v; // 兜底字符串
+					};
+
+					// 将 current 中的 quotes 统一压平为条目
+					const flushCurrent = () => {
+						if (!current) return;
+						const conf = current.confidence ?? 1;
+						const tp = current.type;
+						const arr = Array.isArray(current._quotes) ? current._quotes :
+							(current.quote ? [String(current.quote)] : []);
+						for (const q of arr) {
+							const s = String(q || '');
+							if (!s) continue;
+							quotes.push({ quote: s, confidence: conf, type: tp });
+						}
+					};
+
+					for (let i = 0; i < lines.length; i++) {
+						const line = lines[i];
+						if (!line.trim()) continue;
+						if (/^\s*#/.test(line)) continue; // 注释
+
+						// 顶层键
+						const top = /^(\w[\w_-]*):\s*(.*)$/.exec(line);
+						if (top && !/^\s/.test(line)) {
+							const k = top[1];
+							const v = top[2];
+							if (k === 'results') {
+								inResults = true;
+								readingQuotes = false;
+								continue;
+							}
+							if (k in meta) meta[k] = parseValue(v);
+							continue;
+						}
+
+						if (inResults) {
+							// 条目起始：  - result:
+							if (/^\s*-\s+result:\s*$/.test(line)) {
+								// 推送上一个条目
+								flushCurrent();
+								current = {};
+								readingQuotes = false;
+								continue;
+							}
+
+							// 若在读取多行 quotes 数组，先尝试解析子项 "- xxx"
+							if (readingQuotes) {
+								const mList = /^\s{6,}-\s*(.*)$/.exec(line);
+								if (mList) {
+									const val = parseValue(mList[1]);
+									if (val !== undefined) {
+										current._quotes = current._quotes || [];
+										current._quotes.push(String(val));
+									}
+									continue; // 继续读取下一行数组项
+								} else {
+									// 退出数组读取，继续按字段解析本行
+									readingQuotes = false;
+								}
+							}
+
+							// 结果字段：      key: value （>=4空格缩进）
+							const m = /^\s{4,}([\w_-]+):\s*(.*)$/.exec(line);
+							if (m && current) {
+								const key = m[1];
+								const rawVal = m[2];
+								if (key === 'quotes') {
+									// 支持三种形式：
+									// 1) 内联数组：quotes: ["...", "..."]
+									// 2) 列表多行：quotes:\n      //   - "..."\n      //   - "..."
+									// 3) 单值：quotes: "..."
+									const trimmed = rawVal.trim();
+									if (trimmed === '') {
+										readingQuotes = true;
+										continue;
+									}
+									if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+										// 简易解析内联字符串数组：提取双引号内的内容（支持转义 \"）
+										const items = [];
+										const re = /"((?:\\\"|[^"])*)"/g;
+										let mm;
+										while ((mm = re.exec(trimmed))) {
+											items.push(mm[1].replace(/\\\"/g, '"'));
+										}
+										current._quotes = items;
+									} else {
+										// 单行值（按字符串处理）
+										const v = parseValue(rawVal);
+										current._quotes = [String(v)];
+									}
+								} else if (key === 'quote') {
+									// 兼容旧版本
+									const v = parseValue(rawVal);
+									current._quotes = [String(v)];
+								} else {
+									current[key] = parseValue(rawVal);
+								}
+							}
+						}
+					}
+
+					// 推送最后一个条目
+					flushCurrent();
+
+					this.state.meta = meta;
+					// 去重（同一 quote 仅保留一次）
+					const seen = new Set();
+					this.state.quotes = quotes.filter(q => {
+						const k = q.quote + '|' + q.confidence + '|' + (q.type ?? '');
+						if (seen.has(k)) return false;
+						seen.add(k);
+						return true;
+					}).map((q, i) => ({ ...q, index: i }));
+
+					// 显示元信息
+					this.$.docId.textContent = String(meta.document_id || '—');
+					this.$.docLang.textContent = String(meta.language || '—');
+					this.$.docCreated.textContent = String(meta.created_at || '—');
+				}
+				// endregion
+
+				// region 模块内生：文本匹配与高亮（跨节点匹配）
+				_highlightQuotes() {
+					const quotes = this.state.quotes || [];
+					const container = this.$.doc;
+
+					// 收集所有 Text 节点
+					const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
+						acceptNode: (node) => {
+							if (!node.nodeValue) return NodeFilter.FILTER_REJECT;
+							const s = node.nodeValue.trim();
+							if (!s) return NodeFilter.FILTER_REJECT;
+							// 跳过脚本或样式（理论上 doc 内不会有）
+							if (node.parentElement && ['SCRIPT', 'STYLE'].includes(node.parentElement.tagName)) {
+								return NodeFilter.FILTER_REJECT;
+							}
+							return NodeFilter.FILTER_ACCEPT;
+						}
+					});
+
+					const nodes = [];
+					let n;
+					while ((n = walker.nextNode())) {
+						nodes.push(n);
+					}
+
+					// 构建全文字符串与映射
+					let full = '';
+					const segments = []; // {node, start, end}
+					for (const node of nodes) {
+						const start = full.length;
+						full += node.nodeValue;
+						const end = full.length;
+						segments.push({ node, start, end });
+					}
+
+					// 标准化函数（用于在全文与 quote 上做一致规范化搜索）
+					const normalize = (s) => s
+						.replace(/\s+/g, ' ')            // 合并空白
+						.replace(/[\u2018\u2019]/g, "'") // 弯引号 → 直引号
+						.replace(/[\u201C\u201D]/g, '"')  // 弯双引号 → 直双引号
+						.trim();
+
+					const normFull = normalize(full);
+					// 建立位置映射：normFull 索引 -> full 索引（考虑合并空白后的位移）
+					const mapIndex = [];
+					{
+						let iFull = 0;
+						let iNorm = 0;
+						while (iFull < full.length) {
+							const ch = full[iFull];
+							if (/\s/.test(ch)) {
+								// collapse to single space: only map first in a series
+								let j = iFull;
+								while (j < full.length && /\s/.test(full[j])) j++;
+								// 插入一个空格映射
+								mapIndex[iNorm] = iFull; // 这个空格在 full 的起始位置
+								iNorm += 1; // 一个空格
+								iFull = j;
+								continue;
+							}
+							const ch2 = ch
+								.replace(/[\u2018\u2019]/, "'")
+								.replace(/[\u201C\u201D]/, '"');
+							mapIndex[iNorm] = iFull;
+							iNorm += ch2.length; // 1
+							iFull += 1;
+						}
+					}
+
+					const ranges = []; // { start,end,confidence,index,type,mode }
+					let exactHit = 0, fuzzyHit = 0;
+					const matchedIdx = new Set();
+
+					// 第一轮：精确匹配
+					for (const q of quotes) {
+						// 关键修复：当 YAML 引文包含 Markdown 行内语法（链接/加粗/斜体/代码等）时，
+						// 需要先将其还原为渲染后的可见纯文本再参与匹配。
+						const plainQ = this._mdInlineToText(String(q.quote || ''));
+						const normQ = normalize(plainQ);
+						if (!normQ) { continue; }
+						const idx = normFull.indexOf(normQ);
+						if (idx !== -1) {
+							// 映射回 full 索引
+							const startFull = mapIndex[idx] ?? 0;
+							const lastNorm = idx + normQ.length - 1;
+							const endFull = (mapIndex[lastNorm] ?? (full.length - 1)) + 1; // 右开区间
+							ranges.push({ start: startFull, end: endFull, confidence: Number(q.confidence || 1), index: q.index, type: q.type, mode: 'exact' });
+							exactHit++;
+							matchedIdx.add(q.index);
+						}
+					}
+
+					// 第二轮：模糊匹配（仅对未命中）
+					if (this.state.fuzzyEnabled) {
+						for (const q of quotes) {
+							if (matchedIdx.has(q.index)) continue;
+							const plainQ = this._mdInlineToText(String(q.quote || ''));
+							const normQ = normalize(plainQ);
+							if (!normQ) continue;
+							// 优先尝试“桥接间隙”匹配：适配正文中多出 [7] 等引用标注的情况
+							const gap = this._gapBridgeLocate(normFull, normQ);
+							if (gap) {
+								const startFull = mapIndex[gap.start] ?? 0;
+								const endFull = (mapIndex[Math.max(0, gap.end - 1)] ?? (full.length - 1)) + 1;
+								ranges.push({ start: startFull, end: endFull, confidence: Number(q.confidence || 1), index: q.index, type: q.type, mode: 'fuzzy' });
+								fuzzyHit++;
+								matchedIdx.add(q.index);
+								continue;
+							}
+							// 基于长度的基础阈值 + 文献编号 [n] 的额外容错（插入/删除）
+							let kBase = Math.ceil(normQ.length * (this.state.fuzzyThreshold || 0.15));
+							let extra = 0;
+							const cite = normQ.match(/\[\d+\]/g);
+							if (cite) extra = cite.reduce((a, s) => a + s.length, 0); // 为引用标注字符额外放宽
+							const k = Math.max(1, Math.min(64, kBase + Math.min(10, extra)));
+							const hit = this._fuzzyLocate(normFull, normQ, k);
+							if (hit) {
+								const startFull = mapIndex[hit.start] ?? 0;
+								const endFull = (mapIndex[Math.max(0, hit.end - 1)] ?? (full.length - 1)) + 1;
+								ranges.push({ start: startFull, end: endFull, confidence: Number(q.confidence || 1), index: q.index, type: q.type, mode: 'fuzzy' });
+								fuzzyHit++;
+								matchedIdx.add(q.index);
+							}
+						}
+					}
+
+					const missed = quotes.length - matchedIdx.size;
+
+					// 根据起始位置从后往前处理，避免拆分影响后续偏移
+					ranges.sort((a, b) => b.start - a.start || b.end - a.end);
+
+					const marks = [];
+					for (const r of ranges) {
+						// 将区间映射到具体节点
+						const affected = this._locateNodes(segments, r.start, r.end);
+						if (!affected.length) continue;
+
+						// 对每个节点进行切分与包裹
+						for (let k = affected.length - 1; k >= 0; k--) {
+							const part = affected[k]; // { node, from, to } 相对该 node 的偏移
+							const mark = this._wrapRangeInNode(part.node, part.from, part.to, r.confidence, r.index, r.type, r.mode || 'exact');
+							if (mark) marks.push(mark);
+						}
+					}
+
+					this.state.marks = marks.reverse(); // 自然顺序
+					const totalHit = exactHit + fuzzyHit;
+					this.$.matchStats.textContent = `命中 ${totalHit}（精确 ${exactHit} / 模糊 ${fuzzyHit}） · 未匹配 ${missed}`;
+					this.$.prevBtn.disabled = this.state.marks.length === 0;
+					this.$.nextBtn.disabled = this.state.marks.length === 0;
+					this.$.exportBtn.disabled = this.state.marks.length === 0;
+					this.state.cursor = this.state.marks.length ? 0 : -1;
+					if (this.state.cursor >= 0) this._scrollToMark(this.state.marks[0]);
+
+					return { success: totalHit, missed, exact: exactHit, fuzzy: fuzzyHit };
+				}
+
+				_locateNodes(segments, startFull, endFull) {
+					// 返回受影响的节点与在该节点的局部偏移
+					const res = [];
+					for (const seg of segments) {
+						if (seg.end <= startFull) continue;
+						if (seg.start >= endFull) break;
+						const s = Math.max(0, startFull - seg.start);
+						const e = Math.min(seg.end - seg.start, endFull - seg.start);
+						res.push({ node: seg.node, from: s, to: e });
+					}
+					return res;
+				}
+
+				_wrapRangeInNode(node, from, to, confidence, idx, type, mode = 'exact') {
+					// 在单个 Text 节点中，将 [from, to) 包裹为 <mark>
+					try {
+						let t = node;
+						if (from > 0) t = t.splitText(from);
+						if (to - from < t.nodeValue.length) t.splitText(to - from);
+						const mark = document.createElement('mark');
+						mark.className = 'hl';
+							// 根据置信度调节背景透明度（0.4~0.85），并按类型着色
+							const alpha = Math.max(0.35, Math.min(0.85, 0.35 + 0.5 * Number(confidence || 1)));
+							mark.style.background = this._colorForType(type, alpha);
+						mark.dataset.index = String(idx);
+						mark.dataset.mode = String(mode || 'exact');
+						if (type) mark.dataset.type = String(type);
+						t.parentNode.replaceChild(mark, t);
+						mark.appendChild(t);
+						return mark;
+					} catch (e) {
+						console.warn('wrap failed', e);
+						return null;
+					}
+				}
+
+					// 基于类型的 26 色调色盘（通过哈希映射到 0..25 桶，返回 hsla 颜色字符串）
+					_colorForType(type, alpha = 0.6) {
+						if (!type) return `rgba(255, 238, 153, ${alpha})`; // 无类型回退到默认黄
+						const buckets = 26;
+						const idx = ((this._hashStr(String(type).toLowerCase().trim()) % buckets) + buckets) % buckets;
+						const hue = Math.round(idx * (360 / buckets));
+						return `hsla(${hue}, 80%, 65%, ${alpha})`;
+					}
+
+					_hashStr(s) {
+						// djb2 简化版
+						let h = 5381;
+						for (let i = 0; i < s.length; i++) h = ((h << 5) + h) + s.charCodeAt(i);
+						return h >>> 0; // 无符号
+					}
+
+				_clearHighlights() {
+					// 还原所有 mark
+					const { doc } = this.$;
+					const marks = Array.from(doc.querySelectorAll('mark.hl'));
+					for (const m of marks) {
+						const txt = document.createTextNode(m.textContent || '');
+						m.parentNode.replaceChild(txt, m);
+					}
+					this.state.marks = [];
+					this.state.cursor = -1;
+					this.$.matchStats.textContent = '—';
+					this.$.prevBtn.disabled = true;
+					this.$.nextBtn.disabled = true;
+					this.$.exportBtn.disabled = true;
+					this._renderQuoteList([]);
+				}
+				// endregion
+
+				// region 模块内生：侧栏清单与导航
+				_populateQuoteList(matches) {
+					const modeByIdx = new Map();
+					for (const m of this.state.marks) {
+						const idx = Number(m.dataset.index);
+						if (!modeByIdx.has(idx)) modeByIdx.set(idx, String(m.dataset.mode || 'exact'));
+					}
+					const listData = this.state.quotes.map(q => ({
+						quote: q.quote,
+						type: q.type,
+						confidence: q.confidence,
+						index: q.index,
+						matched: modeByIdx.has(q.index),
+						mode: modeByIdx.get(q.index) || null,
+					}));
+					this._renderQuoteList(listData);
+				}
+
+				_renderQuoteList(items) {
+					const { quotesList, listHint } = this.$;
+					quotesList.innerHTML = '';
+					if (!items || !items.length) {
+						listHint.textContent = '暂无高亮项';
+						return;
+					}
+					listHint.textContent = `共 ${items.length} 条`;
+					for (const it of items) {
+						const el = document.createElement('div');
+						el.className = 'quote-item';
+							const color = this._colorForType(it.type, 0.9);
+							const matchedBadge = it.matched
+								? (it.mode === 'fuzzy' ? '<span class="badge">模糊匹配</span>' : '<span class="badge">精确匹配</span>')
+								: (this.state.fuzzyEnabled ? '<span class="badge">未模糊匹配</span>' : '<span class="badge">未启用模糊</span>');
+							el.innerHTML = `
+								<div class="q"><span class="dot" style="background:${color}"></span> ${this._escapeHtml(it.quote)}</div>
+								<div class="sub">
+									<span class="badge"><span class="dot" style="background:${color}"></span> ${this._escapeHtml(it.type || '未标注')}</span>
+									· 置信度: ${Number(it.confidence).toFixed(2)} · ${it.matched ? '<span class="ok">已匹配</span>' : '<span class="error">未匹配</span>'} · ${matchedBadge}
+								</div>
+								<div class="actions">
+									<button class="button" data-act="locate" data-idx="${it.index}">定位</button>
+									<button class="button" data-act="copy" data-idx="${it.index}">复制引文</button>
+								</div>
+							`;
+						el.addEventListener('click', (e) => {
+							const btn = e.target.closest('button');
+							if (!btn) return;
+							const idx = Number(btn.dataset.idx);
+							if (btn.dataset.act === 'locate') this._locateByIndex(idx);
+							if (btn.dataset.act === 'copy') this._copyQuoteByIndex(idx);
+						});
+						quotesList.appendChild(el);
+					}
+				}
+
+				_locateByIndex(idx) {
+					const pos = this.state.marks.findIndex(m => Number(m.dataset.index) === idx);
+					if (pos >= 0) {
+						this.state.cursor = pos;
+						this._scrollToMark(this.state.marks[pos], true);
+					} else {
+						this._setStatus('未找到对应的高亮位置。');
+					}
+				}
+
+				async _copyQuoteByIndex(idx) {
+					const item = this.state.quotes.find(q => q.index === idx);
+					if (!item) return;
+					try {
+						await navigator.clipboard.writeText(item.quote);
+						this._setStatus('已复制引文到剪贴板。');
+					} catch {
+						this._setStatus('复制失败：浏览器权限限制。', true);
+					}
+				}
+
+				_jump(delta) {
+					if (!this.state.marks.length) return;
+					this.state.cursor = (this.state.cursor + delta + this.state.marks.length) % this.state.marks.length;
+					this._scrollToMark(this.state.marks[this.state.cursor], true);
+				}
+
+                _scrollToMark(mark, flash = false) {
+                    // 使用窗口滚动，避免内层滚动容器在 Chrome 中出现的越界问题
+                    const headerOffset = 84; // 与样式中的 scroll-margin-top 保持一致
+                    const rect = mark.getBoundingClientRect();
+                    const absoluteTop = window.scrollY + rect.top;
+                    const targetTop = Math.max(0, absoluteTop - headerOffset);
+                    window.scrollTo({ top: targetTop, behavior: 'smooth' });
+                    if (flash) this._flash(mark);
+                }
+
+				_flash(el) {
+					el.style.transition = 'box-shadow 0.8s ease';
+					el.style.boxShadow = '0 0 0 4px rgba(124, 192, 255, 0.5)';
+					setTimeout(() => { el.style.boxShadow = 'none'; }, 800);
+				}
+
+				_exportHighlightedHTML() {
+					const html = `<!DOCTYPE html>\n<html lang="zh-CN">\n<head>\n<meta charset="UTF-8"/>\n<title>已高亮导出</title>\n<style>mark{background:#ffee99;color:#242424;padding:1px 0;border-radius:4px;}</style>\n</head>\n<body>${this.$.doc.outerHTML}</body>\n</html>`;
+					const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+					const a = document.createElement('a');
+					a.href = URL.createObjectURL(blob);
+					a.download = 'highlighted.html';
+					document.body.appendChild(a);
+					a.click();
+					a.remove();
+				}
+				// endregion
+
+				// region 工具方法（局部、紧邻使用者）
+				_escapeHtml(s) {
+					return String(s)
+						.replace(/&/g, '&amp;')
+						.replace(/</g, '&lt;')
+						.replace(/>/g, '&gt;');
+				}
+
+				// 在模式中未包含引用标注而正文中包含时，允许在左右锚点之间存在小段缺口
+				_gapBridgeLocate(text, pattern) {
+					const m = pattern.length;
+					if (m < 6) return null;
+					// 若模式自身包含 [n]，优先按引用位置分割
+					const citeRe = /\[(\d+)\]/;
+					let splitAt = -1, citeLen = 0;
+					{
+						const mm = pattern.match(citeRe);
+						if (mm && mm.index !== undefined) { splitAt = mm.index; citeLen = mm[0].length; }
+					}
+					let left, right;
+					if (splitAt >= 0) {
+						left = pattern.slice(0, splitAt);
+						right = pattern.slice(splitAt + citeLen);
+					} else {
+						// 否则按中间分割，取左右锚点
+						const leftLen = Math.max(4, Math.min(16, Math.floor(m * 0.35)));
+						const rightLen = Math.max(4, Math.min(16, Math.floor(m * 0.35)));
+						left = pattern.slice(0, leftLen);
+						right = pattern.slice(m - rightLen);
+					}
+					if (!left || !right) return null;
+					// 在全文中寻找左锚出现位置，数量限制
+					const positions = [];
+					let i = 0;
+					while (positions.length < 20) {
+						const p = text.indexOf(left, i);
+						if (p === -1) break;
+						positions.push(p);
+						i = p + 1;
+					}
+					if (!positions.length) return null;
+					const maxGap = Math.max(24, Math.min(160, Math.floor(pattern.length * 0.8))); // 自适应允许的间隙长度
+					for (const p of positions) {
+						const after = p + left.length;
+						const q = text.indexOf(right, after);
+						if (q === -1) continue;
+						const between = text.slice(after, q);
+						if (between.length <= maxGap) {
+							// 优先：间隙中包含引用标记 [数字]
+							if (/\[\d+\]/.test(between) || /\s{0,}[,，、]{0,1}\s{0,}/.test(between)) {
+								return { start: p, end: q + right.length };
+							}
+						}
+					}
+					return null;
+				}
+
+				// —— 模糊匹配辅助：仅对未精确命中的条目进行回退 ——
+				_fuzzyLocate(normFull, normQ, k) {
+					const n = normFull.length, m = normQ.length;
+					if (!n || !m) return null;
+					const positions = this._collectFuzzyCandidates(normFull, normQ);
+					let best = null;
+					for (const pos of positions) {
+						const res = this._approxMatchAround(normFull, normQ, k, pos);
+						if (res && (!best || res.cost < best.cost)) best = res;
+						if (best && best.cost === 0) break;
+					}
+					return best; // {start,end,cost} in norm space
+				}
+
+				_collectFuzzyCandidates(text, pattern) {
+					const m = pattern.length;
+					let anchorLen = Math.max(4, Math.min(20, Math.ceil(m * 0.3)));
+					const pushAll = (needle, max = 20) => {
+						const list = [];
+						if (!needle) return list;
+						let i = 0, cnt = 0;
+						while (cnt < max) {
+							const idx = text.indexOf(needle, i);
+							if (idx === -1) break;
+							list.push(idx);
+							i = idx + 1;
+							cnt++;
+						}
+						return list;
+					};
+					const set = new Set();
+					const add = (arr) => arr.forEach(x => set.add(x));
+					let tried = 0;
+					while (set.size === 0 && anchorLen >= 3 && tried < 3) {
+						add(pushAll(pattern.slice(0, anchorLen)));
+						add(pushAll(pattern.slice(Math.max(0, m - anchorLen))));
+						anchorLen = Math.max(3, Math.floor(anchorLen / 2));
+						tried++;
+					}
+					if (set.size === 0) {
+						const step = Math.max(1, Math.floor(text.length / 10));
+						for (let i = 0; i < text.length; i += step) set.add(i);
+					}
+					return Array.from(set).slice(0, 30);
+				}
+
+				_approxMatchAround(text, pattern, k, pos) {
+					const n = text.length, m = pattern.length;
+					const pad = Math.ceil(m * 0.5) + k + 8;
+					const winStart = Math.max(0, pos - pad);
+					const winEnd = Math.min(n, pos + pad);
+					const win = text.slice(winStart, winEnd);
+					const W = win.length;
+					if (W === 0) return null;
+					// 构建完整 DP 矩阵，便于回溯精准起点（Sellers 局部对齐）
+					const dp = new Array(W + 1);
+					for (let i = 0; i <= W; i++) dp[i] = new Array(m + 1);
+					for (let j = 0; j <= m; j++) dp[0][j] = j; // 模式前缀成本
+					for (let i = 1; i <= W; i++) dp[i][0] = 0; // 局部匹配：允许任意起点
+					let bestCost = Infinity, bestEnd = -1;
+					for (let i = 1; i <= W; i++) {
+						const chT = win.charCodeAt(i - 1);
+						let rowMin = dp[i][0];
+						for (let j = 1; j <= m; j++) {
+							const chP = pattern.charCodeAt(j - 1);
+							const sub = dp[i - 1][j - 1] + (chT === chP ? 0 : 1);
+							const ins = dp[i][j - 1] + 1;
+							const del = dp[i - 1][j] + 1;
+							const v = sub < ins ? (sub < del ? sub : del) : (ins < del ? ins : del);
+							dp[i][j] = v;
+							if (v < rowMin) rowMin = v;
+						}
+						if (dp[i][m] < bestCost) { bestCost = dp[i][m]; bestEnd = i; }
+					}
+					if (bestCost > k || bestEnd < 0) return null;
+					// 回溯获取精准起点
+					let i = bestEnd, j = m;
+					while (j > 0 && i > 0) {
+						const chT = win.charCodeAt(i - 1);
+						const chP = pattern.charCodeAt(j - 1);
+						const costSub = (chT === chP ? 0 : 1);
+						if (dp[i][j] === dp[i - 1][j - 1] + costSub) { i--; j--; continue; }
+						if (dp[i][j] === dp[i - 1][j] + 1) { i--; continue; }
+						// else from left
+						j--;
+					}
+					const startIdx = winStart + i;
+					const endIdx = winStart + bestEnd;
+					return { start: startIdx, end: endIdx, cost: bestCost };
+				}
+
+				// 将 Markdown 行内语法（链接、强调、代码、删除线、图像、引用式链接、自动链接等）
+				// 转换为渲染后的可见纯文本，便于与 DOM 文本匹配。
+				_mdInlineToText(input) {
+					let s = String(input || '');
+					// 统一换行
+					s = s.replace(/\r\n?/g, '\n');
+					// 代码块围栏（```lang\n...```）——尽量保留内部文本，去掉围栏与可选语言标注
+					s = s.replace(/```[\t ]*([a-zA-Z0-9_+-]+)?\n([\s\S]*?)```/g, '$2');
+					// 行内代码 `code`
+					s = s.replace(/`([^`]+)`/g, '$1');
+					// 行内链接 [text](url "title") → text（支持转义方括号/右括号）
+					s = s.replace(/\[((?:\\.|[^\]])+)\]\((?:\\.|[^)])+\)/g, '$1');
+					// 引用式链接 [text][ref] → text
+					s = s.replace(/\[([^\]]+)\]\[[^\]]+\]/g, '$1');
+					// 图片 ![alt](src) → alt（若无 alt 则清空）
+					s = s.replace(/!\[([^\]]*)\]\((?:[^)]+)\)/g, '$1');
+					// 强调/加粗/粗斜体
+					s = s.replace(/\*\*([^*]+)\*\*/g, '$1');
+					s = s.replace(/__([^_]+)__/g, '$1');
+					s = s.replace(/\*(?!\*)([^*]+)\*/g, '$1');
+					s = s.replace(/_([^_]+)_/g, '$1');
+					// 删除线
+					s = s.replace(/~~([^~]+)~~/g, '$1');
+					// 自动链接 <http://example.com> → http://example.com
+					s = s.replace(/<([a-zA-Z][^>\s]+)>/g, '$1');
+					// 内联 HTML 标签去除，仅保留文本
+					s = s.replace(/<\/?[^>]+>/g, '');
+					// 反斜杠转义（\* \_ 等）去掉转义符
+					s = s.replace(/\\([*_`~\[\]()>#+\-])/g, '$1');
+					// 合并空白
+					s = s.replace(/\s+/g, ' ').trim();
+					return s;
+				}
+				// endregion
+			}
+			// endregion
+
+			// region 尾声：启动程序（确保类已定义后执行）
+			window.addEventListener('DOMContentLoaded', main);
+			// endregion
+		</script>
+		<!-- endregion -->
+	</body>
+	</html>
+

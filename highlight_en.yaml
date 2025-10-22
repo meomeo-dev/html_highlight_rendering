@@ -1,0 +1,86 @@
+schema_version: "1.0.0"
+document_id: "wikipedia-home-page"
+language: "en"
+created_at: "2024-12-18T12:00:00Z"
+results:
+  - result:
+      rationale: "This sentence provides the core definition of a home page, which is a fundamental concept for entry-level understanding."
+      type: "定义"
+      quotes:
+        - "A **home page** (or **homepage**) is the main [web page](https://en.wikipedia.org/wiki/Web_page \"Web page\") of a [website](https://en.wikipedia.org/wiki/Website \"Website\")."
+      confidence: 1.0
+      gap: ""
+  - result:
+      rationale: "This offers a concrete example of how a home page is located, making the concept more accessible with a specific, perceivable illustration."
+      type: "举例"
+      quotes:
+        - "For example, if the domain is `example.com`, the home page is likely located at the [URL](https://en.wikipedia.org/wiki/URL \"URL\")`www.example.com/`."
+      confidence: 0.95
+      gap: ""
+  - result:
+      rationale: "This defines an alternative meaning of the term, distinguishing it from the primary definition and providing clarity for beginners."
+      type: "关键术语"
+      quotes:
+        - "The term may also refer to the **start page** shown in a [web browser](https://en.wikipedia.org/wiki/Web_browser \"Web browser\") when the [application](https://en.wikipedia.org/wiki/Application_software \"Application software\") first opens."
+      confidence: 0.9
+      gap: ""
+  - result:
+      rationale: "This sentence explains the primary function of a home page, including its role as a landing page, which is a key concept for understanding website structure."
+      type: "基础概念"
+      quotes:
+        - "A home page is the main web page that a visitor will view when they navigate to a website via a search engine, and it may also function as a [landing page](https://en.wikipedia.org/wiki/Landing_page \"Landing page\") to attract visitors."
+      confidence: 0.95
+      gap: ""
+  - result:
+      rationale: "This describes a specific case, providing an example of when a home page acts as a site directory, which helps in understanding variations."
+      type: "举例"
+      quotes:
+        - "In some cases, the home page is a [site directory](https://en.wikipedia.org/wiki/Webserver_directory_index \"Webserver directory index\"), particularly when a website has multiple home pages."
+      confidence: 0.85
+      gap: ""
+  - result:
+      rationale: "This highlights the importance of design with a practical example from news websites, emphasizing priority and including an actionable illustration."
+      type: "教学中老师强调的内容"
+      quotes:
+        - "Good home [page design](https://en.wikipedia.org/wiki/Web_design \"Web design\") is usually a high priority for a website; for example, a news website may curate headlines and first paragraphs of top stories, with [links](https://en.wikipedia.org/wiki/Hyperlink \"Hyperlink\") to full articles."
+      confidence: 0.9
+      gap: ""
+  - result:
+      rationale: "This quote from a source emphasizes the significance of the home page, serving as a strong conclusion and key point for beginners."
+      type: "强有力的结论"
+      quotes:
+        - "According to _Homepage Usability_, the home page is the \"most important page on any website\" and receives the most views of any page."
+      confidence: 1.0
+      gap: ""
+  - result:
+      rationale: "This warns about the consequences of poor design, connecting to practical advice and common pitfalls for entry-level learners."
+      type: "常见误解"
+      quotes:
+        - "A poorly designed home page can overwhelm and deter visitors from the site."
+      confidence: 0.85
+      gap: ""
+  - result:
+      rationale: "This identifies a key function, linking to business value, which bridges to real-world application."
+      type: "核心论点"
+      quotes:
+        - "One important use of home pages is communicating the identity and value of a company."
+      confidence: 0.9
+      gap: ""
+  - result:
+      rationale: "This defines the browser start page, distinguishing it and providing a basic explanation suitable for beginners."
+      type: "定义"
+      quotes:
+        - "When a [web browser](https://en.wikipedia.org/wiki/Web_browser \"Web browser\") is launched, it will automatically open at least one [web page](https://en.wikipedia.org/wiki/Web_page \"Web page\"). This is the browser's start page, which is also called its home page."
+      confidence: 0.95
+      gap: ""
+  - result:
+      rationale: "This provides examples of start page types and mentions a market niche, offering concrete illustrations and surprising insight."
+      type: "举例"
+      quotes:
+        - "Start pages can be a [website](https://en.wikipedia.org/wiki/Website \"Website\") or a special browser page, such as [thumbnails](https://en.wikipedia.org/wiki/Thumbnail \"Thumbnail\") of frequently visited websites. Moreover, there is a niche market of websites intended to be used solely as start pages."
+      confidence: 0.9
+      gap: ""
+  - result: null
+  - result: null
+  - result: null
+  - result: null
