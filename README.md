@@ -11,6 +11,10 @@
 
 ---
 
+<img src="./Screenshot.png" alt="示例截图" width="760" />
+
+---
+
 ## Live
 
 - GitHub Pages: https://meomeo-dev.github.io/html_highlight_rendering/
