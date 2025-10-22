@@ -19,6 +19,11 @@
 				--mark-bg: #ffee99;
 				--mark-fg: #242424;
 				--border: #1e293b;
+				/* W&B（Weights & Biases）风格主色：高对比黄与墨色文字 */
+				--wb-yellow: #ffbe00;
+				--wb-yellow-hover: #ffcc33;
+				--wb-yellow-active: #e5ad00;
+				--wb-ink: #111111;
 			}
 
 			* { box-sizing: border-box; }
@@ -80,6 +85,22 @@
 				border-radius: 8px;
 				cursor: pointer;
 			}
+			/* 高可见度：W&B 风格按钮（纯色、非渐变） */
+			.button.wb {
+				background: var(--wb-yellow);
+				color: var(--wb-ink);
+				border-color: #8a5d00; /* 与黄相近的深色描边，增强分层 */
+				font-weight: 700;
+				letter-spacing: 0.2px;
+			}
+			.button.wb:hover { background: var(--wb-yellow-hover); }
+			.button.wb:active { background: var(--wb-yellow-active); }
+			.button.wb:focus-visible {
+				outline: 2px solid #ffd466;
+				outline-offset: 2px;
+			}
+			/* 稍大的尺寸，提升显眼度 */
+			.button.lg { padding: 10px 16px; font-size: 14px; }
 			.button.primary {
 				background: linear-gradient(90deg, #2563eb, #7c3aed);
 				border-color: transparent;
@@ -210,7 +231,7 @@
 						<input type="file" id="yamlInput" accept=".yaml,.yml" />
 					</div>
 
-					<a class="button" href="highlight.prompt.md" download title="下载用于生成高亮的提示词模板（highlight.prompt.md）">下载提示词</a>
+					<a class="button wb lg" href="highlight.prompt.md" download title="下载用于生成高亮的提示词模板（highlight.prompt.md）">下载提示词</a>
 
 						<label class="badge" title="仅对未命中的条目尝试模糊匹配（编辑距离阈值约 15%）" style="cursor:pointer;">
 							<input type="checkbox" id="fuzzyToggle" style="margin-right:6px; accent-color:#7cc0ff;"> 模糊匹配
@@ -262,7 +283,7 @@
 							请选择左上角的 <strong>Markdown 源文件</strong> 与 <strong>YAML 高亮文件</strong>，
 							然后点击“渲染并高亮”。本应用将先渲染 Markdown，再对 YAML 中的 <em>quote</em> 文本进行定位与高亮。
 						</p>
-						<p class="hint">提示：示例文件可参考您提供的 <code>article.md</code> 与 <code>highlight.yaml</code>。</p>
+						<p class="hint">提示：示例文件可参考您提供的 <a href="article.md" download title="下载示例 Markdown 文档"><code>article.md</code></a> 与 <a href="highlight.yaml" download title="下载示例高亮配置 YAML"><code>highlight.yaml</code></a>。</p>
 					</article>
 				</section>
 			</main>
