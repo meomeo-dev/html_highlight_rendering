@@ -11,6 +11,12 @@
 
 ---
 
+## Live
+
+- GitHub Pages: https://meomeo-dev.github.io/html_highlight_rendering/
+
+---
+
 ## 目录结构
 
 - `index.html`：应用本体（单文件、包含样式与脚本）
