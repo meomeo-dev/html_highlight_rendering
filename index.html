@@ -190,6 +190,9 @@
 		<!-- endregion -->
 	</head>
 	<body>
+		<!-- 第三方库：Marked（Markdown 渲染）与 DOMPurify（可选：安全清理） -->
+		<script src="https://cdn.jsdelivr.net/npm/marked@16.4.1/lib/marked.umd.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/dompurify@3.3.0/dist/purify.min.js"></script>
 		<!-- region 第一章：应用入口与主流程（Top-Down Narrative） -->
 		<div class="app" id="app">
 			<header>
@@ -430,9 +433,22 @@
 				}
 				// endregion
 
-				// region 模块内生：Markdown 渲染（轻量实现）
+				// region 模块内生：Markdown 渲染（优先使用 marked，离线回退到内置解析器）
 				_renderMarkdown() {
-					const html = this._markdownToHtml(this.state.mdText);
+					const md = this.state.mdText || '';
+					let html;
+					if (window.marked && typeof window.marked.parse === 'function') {
+						// 配置 marked：启用 GFM，禁用 mangle 以保留中文/非 ASCII 标题
+						try { window.marked.setOptions?.({ gfm: true, breaks: false, headerIds: true, mangle: false }); } catch {}
+						const raw = window.marked.parse(md);
+						// 若可用，使用 DOMPurify 进行安全清理
+						html = (window.DOMPurify && typeof window.DOMPurify.sanitize === 'function')
+							? window.DOMPurify.sanitize(raw)
+							: raw;
+					} else {
+						// 回退：使用内置轻量解析器，确保离线可用
+						html = this._markdownToHtml(md);
+					}
 					this.$.doc.innerHTML = html;
 					this._clearHighlights(); // 渲染会重建 DOM，需清空旧高亮
 				}
