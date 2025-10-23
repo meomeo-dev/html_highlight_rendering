@@ -103,3 +103,5 @@ YAML 的完整说明见 `highlight.prompt.md` 的 `final_output_spec`。常见�
 ## 许可证
 
 本项目采用 MIT 许可证发布。详见 `LICENSE` 文件。
+
+第三方库的许可证与合规说明见：[`THIRD_PARTY_NOTICES.md`](./THIRD_PARTY_NOTICES.md)。
