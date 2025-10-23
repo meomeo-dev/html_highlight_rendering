@@ -56,33 +56,34 @@ The output should be a VALID YAML document with the following keys:
     - Data Type: object
     - Required: true
     - Default for item: null
-* 'result' (within items):
-  - Data Type: object
-  - Description: “关键句”提取结果对象
-  - Required: true
-  - Properties:
-    * 'rationale':
-      - Description: 简要理由，说明为何该句关键（可选说明/审计用）
-      - Data Type: string
-      - Required: false
-    * "type":
-      - Description: 引用的分类
-      - Constraints: enum: ['基础概念', '关键术语', '举例', '类比', '常见误解', '学习建议', '步骤/流程', '图示/结构描述', '背景知识', '关键问题', '定义', '定理', '公式', '核心论点', '教学中老师强调的内容', '数据', '证据', '引用', '不同观点', '强有力的结论', '让读者感到惊讶', '有启发', '与已有知识产生连接', '<...其他, 按需求自动拓展生成>']
-      - Data Type: string
-      - Required: true
-    * 'quotes':
-      - Description: 被选中的“直接引用”句子(可以是多个句子, 可以是完整句子, 也可以是部分句子)，保持原文大小写与标点（不改写、不补充）
-      - Constraints: verbatim from source; no paraphrasing; preserve punctuation and casing
-      - Data Type: array<string>
-      - Required: true
-    * 'confidence':
-      - Description: 选择为“关键句”的置信度
-      - Constraints: minimum: 0.0; maximum: 1.0
-      - Data Type: float
-      - Required: true
-    * 'gap':
-      - Description: 标注影响置信度的信息缺口
-      - Data Type: string
-      - Required: true
+    - Element:
+      * 'result' (within items):
+        - Data Type: object
+        - Description: “关键句”提取结果对象
+        - Required: true
+        - Properties:
+          * 'rationale':
+            - Description: 简要理由，说明为何该句关键（可选说明/审计用）
+            - Data Type: string
+            - Required: false
+          * 'type':
+            - Description: 引用的分类
+            - Constraints: enum: ['基础概念', '关键术语', '举例', '类比', '常见误解', '学习建议', '步骤/流程', '图示/结构描述', '背景知识', '关键问题', '定义', '定理', '公式', '核心论点', '教学中老师强调的内容', '数据', '证据', '引用', '不同观点', '强有力的结论', '让读者感到惊讶', '有启发', '与已有知识产生连接', '<...其他, 按需求自动拓展生成>']
+            - Data Type: string
+            - Required: true
+          * 'quotes':
+            - Description: 被选中的“直接引用”句子(可以是多个句子, 可以是完整句子, 也可以是部分句子)，保持原文大小写与标点（不改写、不补充）
+            - Constraints: verbatim from source; no paraphrasing; preserve punctuation and casing
+            - Data Type: array<string>
+            - Required: true
+          * 'confidence':
+            - Description: 选择为“关键句”的置信度
+            - Constraints: minimum: 0.0; maximum: 1.0
+            - Data Type: float
+            - Required: true
+          * 'gap':
+            - Description: 标注影响置信度的信息缺口
+            - Data Type: string
+            - Required: true
 
 final_output: .yaml
